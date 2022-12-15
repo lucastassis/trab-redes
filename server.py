@@ -2,13 +2,12 @@
 # encoding: utf-8
 """Use instead of `python3 -m http.server` when you need CORS"""
 
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 from datetime import datetime
 from threading import Timer
 import sys
 import os
 import psutil
-
+import subprocess 
 
 class repeatTimer(Timer):
     def run(self):
@@ -34,28 +33,22 @@ def job(sname):
             str(memory[3]) + "," +
             str(net[0]) + "," +
             str(net[1]) + "," +
-            str(disk_percentage) + "\n")
+            str(disk_percentage) + "," +
+            str(net[2]) + "," +
+            str(net[3]) + "\n")
     f.close()
 
 
 def get_cpu_data(sname) -> None:
     f = open(f'monitor-{sname}.txt', 'w')
-    f.write("Time,CPU_use,RAM_filled,Net_bytes_sent,Net_bytes_received,Disk_IO_percentage\n")
+    f.write("timestamp,CPU_use,RAM_filled,Net_bytes_sent,Net_bytes_received,Disk_IO_percentage,Packets_sent,Packets_received\n")
     f.close()
     monitor = repeatTimer(1, job, (sname,))
     monitor.start()
 
-class CORSRequestHandler(SimpleHTTPRequestHandler):
-    def end_headers(self):
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET')
-        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
-        return super(CORSRequestHandler, self).end_headers()
-
 def main(args):
-    get_cpu_data(args[2])
-    httpd = HTTPServer((args[1], 8000), CORSRequestHandler)
-    httpd.serve_forever()
+    get_cpu_data(args[1])
+
 if __name__ == '__main__':
     main(sys.argv)
     
