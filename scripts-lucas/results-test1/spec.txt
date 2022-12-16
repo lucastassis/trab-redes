@@ -1,0 +1,4 @@
+sta1, sw => bw=10Mb, loss=1
+sta2, sw => bw=50Mb, loss=0
+sta3, sw => bw=100Mb, loss=0
+h, sw => bw=max, loss=0
