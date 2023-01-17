@@ -1,6 +1,6 @@
 import pandas as pd
 
-log = pd.read_csv('sta3.csv', delimiter=',')
+log = pd.read_csv('player-sta3.csv', delimiter=',')
 log['timestamp'] = pd.to_datetime(log['timestamp'])
 
 monitor = pd.read_csv('monitor-sw3.csv')

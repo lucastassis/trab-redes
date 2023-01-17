@@ -1,0 +1,7 @@
+topo.addLink('h1','sw1', bw=5, loss=0.5)
+topo.addLink('h2','sw2', bw=10, loss=1)
+topo.addLink('h3','sw3', bw=15, loss=2)
+topo.addLink('serv','sw0')
+topo.addLink('sw0','sw1', bw=5, loss=0.5)
+topo.addLink('sw0','sw2', bw=10, loss=1)
+topo.addLink('sw0','sw3', bw=15, loss=2)
