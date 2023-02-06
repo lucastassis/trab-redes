@@ -1,0 +1,8 @@
+#Create links
+	topo.addLink('h1','sw1', bw=20, loss=1)
+	topo.addLink('h2','sw2', bw=20, loss=1)
+	topo.addLink('h3','sw3', bw=20, loss=1)
+	topo.addLink('serv','sw0')
+	topo.addLink('sw0','sw1', bw=20, loss=1)
+	topo.addLink('sw0','sw2', bw=20, loss=1)
+	topo.addLink('sw0','sw3', bw=20, loss=1)
