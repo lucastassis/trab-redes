@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dash Player</title>
+  <link rel="stylesheet" href="extras/bootstrap.min.css">
+  <link rel="stylesheet" href="extras/controlbar.css">
+  <link rel="stylesheet" href="extras/main.css">
+  <link rel="stylesheet" href="extras/tomorrow.min.css">
+  <style>
+    video {
+        width: 100%;
+    }
+
+    .dash-video-player {
+        position: relative; /* This position relative is needed to position the menus */
+        margin: 0 auto;
+        line-height: 1.0;
+    }
+  </style>
+  <script class="code" src="extras/ControlBar.js"></script>
+  <script src="extras/dash.all.debug.js"></script>
+  <script src="extras/highlight.min.js"></script>
+</head>
+<body>
+  <main>
+    <div class="container py-4">
+      <div class="row mt-2">
+        <div class="col-md-6">
+            <div class="dash-video-player code">
+                <div class="videoContainer" id="videoContainer">
+                    <video preload="auto" controls="true" autoplay allow="autoplay"></video>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-5 border rounded-3">
+                <h4>Metrics</h4>
+                <div>
+                    <strong>Reported bitrate:</strong>
+                    <span id="reportedBitrate">1255 Kbps</span>
+                    <br>
+                    <strong>Buffer level:</strong>
+                    <span id="bufferLevel">12 secs</span>
+                    <div id="chrome-only">
+                        <strong>Calculated bitrate:</strong>
+                        <span id="calculatedBitrate">0 Kbps</span>
+                    </div>
+                    <strong>Framerate:</strong>
+                    <span id="framerate">30 fps</span>
+                    <br>
+                    <strong>Resolution:</strong>
+                    <span id="resolution">640x360</span>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>
+
+    function init() {
+      var video,
+        player,
+        url = "http://10.0.2.15/bbb-mp4.mpd";
+
+      video = document.querySelector("video");
+      player = dashjs.MediaPlayer().create();
+      player.initialize(video, url, true);
+      player.on(dashjs.MediaPlayer.events["PLAYBACK_ENDED"], function () {
+        clearInterval(eventPoller);
+        clearInterval(bitrateCalculator);
+      });
+
+      var eventPoller = setInterval(function () {
+        var streamInfo = player.getActiveStream().getStreamInfo();
+        var dashMetrics = player.getDashMetrics();
+        var dashAdapter = player.getDashAdapter();
+
+        if (dashMetrics && streamInfo) {
+          const periodIdx = streamInfo.index;
+          const bitrateInterval = 5;
+          var bitrateCalculator = setInterval(function () {
+            var calculatedBitrate = (((video.webkitVideoDecodedByteCount - lastDecodedByteCount) / 1000) * 8) / bitrateInterval;
+            document.getElementById('calculatedBitrate').innerText = Math.round(calculatedBitrate) + " Kbps";
+            lastDecodedByteCount = video.webkitVideoDecodedByteCount;
+          }, bitrateInterval * 1000);
+          var repSwitch = dashMetrics.getCurrentRepresentationSwitch('video', true);
+          var bufferLevel = dashMetrics.getCurrentBufferLevel('video', true);
+          var bitrate = repSwitch ? Math.round(dashAdapter.getBandwidthForRepresentation(repSwitch.to, periodIdx) / 1000) : NaN;
+          var adaptation = dashAdapter.getAdaptationForType(periodIdx, 'video', streamInfo);
+          var currentRep = adaptation.Representation_asArray.find(function (rep) {
+              return rep.id === repSwitch.to
+          })
+          var lastDecodedByteCount = 0;
+          var calculatedBitrate = (((video.webkitVideoDecodedByteCount - lastDecodedByteCount) / 1000) * 8) / bitrateInterval;
+            document.getElementById('calculatedBitrate').innerText = Math.round(calculatedBitrate) + " Kbps";
+          var frameRate = currentRep.frameRate;
+          var resolution = currentRep.width + 'x' + currentRep.height;
+          document.getElementById('bufferLevel').innerText = bufferLevel + " secs";
+          document.getElementById('framerate').innerText = frameRate + " fps";
+          document.getElementById('reportedBitrate').innerText = bitrate + " Kbps";
+          document.getElementById('resolution').innerText = resolution;
+          
+          const time = (new Date()).toLocaleDateString("en-US", {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+            hour12: false,
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric"
+          });
+          const log = [
+            time,
+            bufferLevel,
+            frameRate,
+            bitrate,
+            resolution,
+            Math.round(calculatedBitrate)
+          ];
+          console.log(log.join(','))
+        }
+      }, 1000);
+
+      /*if (video.webkitVideoDecodedByteCount !== undefined) {
+        var lastDecodedByteCount = 0;
+        const bitrateInterval = 5;
+        var bitrateCalculator = setInterval(function () {
+          var calculatedBitrate = (((video.webkitVideoDecodedByteCount - lastDecodedByteCount) / 1000) * 8) / bitrateInterval;
+          document.getElementById('calculatedBitrate').innerText = Math.round(calculatedBitrate) + " Kbps";
+          lastDecodedByteCount = video.webkitVideoDecodedByteCount;
+        }, bitrateInterval * 1000);
+      } else {
+        document.getElementById('chrome-only').style.display = "none";
+      }*/
+    }
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        init();
+    });
+</script>
+</body>
+</html>
