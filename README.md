@@ -4,10 +4,15 @@ Essa documentação tem como objetivo apresentar brevemente a organização dos 
 
 ## Organização dos diretórios
 `/src/player-x`: contém o código de cada um dos três players utilizados nos clientes. Esse código foi desenvolvido por https://github.com/leandrocalmeida/player-mpegdash.
+
 `/src/results/final-results/`:  contém os diretórios com cada experimento gerado. Os arquivos `processed_X.csv` contém os dados processados referentes ao host X. O arquivo `process.py` é o script desenvolvido para concatenar os dados dos hosts (`player-staX.csv`) e switches(`monitor-swX.csv`).
+
 `/src/scripts-federated-learning`: contém os scripts dos modelos de aprendizado federado.
+
 `/src/scripts-regular-learning`: contém os scripts dos modelos de aprendizado de máquina MLP e RandomForest.
+
 `/src/server.py`: é o script que coleta os dados dos switches.
+
 `/src/topology.py`: é o script do Mininet-Wifi para utilizar a topologia da rede.
 
 ## Como rodar a rede
